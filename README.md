@@ -1,1 +1,1 @@
-# controle-financeiro-wpp
+# Bot para controle financeiro pessoal

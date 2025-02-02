@@ -5,6 +5,9 @@ __pycache__/
 # Venv file
 /venv/
 
+# Testes file
+testes.ipynb
+
 # C extensions
 *.so
 

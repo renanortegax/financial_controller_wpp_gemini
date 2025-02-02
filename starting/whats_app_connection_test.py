@@ -11,7 +11,7 @@ VERSION = os.getenv('VERSION')
 APP_ID = os.getenv('APP_ID')
 
 ## Testar a configuração da API e as chaves
-def send_text_message_whatsapp_teste():
+def send_text_message_whatsapp_teste(text, remetente):
     url = f"https://graph.facebook.com/{VERSION}/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -19,17 +19,17 @@ def send_text_message_whatsapp_teste():
     }
     data = {
         "messaging_product": "whatsapp",
-        "to": PHONE_NUMBER_TO,
+        "to": remetente,
         "type": "text",
         "text": {
             "preview_url": True,
-            "body": "Eai, isso é só um teste, ok?!"
+            "body": text
         }
     }
     
     response = requests.post(url, headers=headers, json=data)
     print(response.status_code)
-    print(response.json())
+    print(response.text)
     return response
 
-response = send_text_message_whatsapp_teste()
+response = send_text_message_whatsapp_teste('Olá, isso é um teste.', PHONE_NUMBER_TO)

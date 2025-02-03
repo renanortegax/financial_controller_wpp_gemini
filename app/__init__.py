@@ -1,6 +1,6 @@
 from flask import Flask
 from app.config import log_config, Config
-from app.webhook_listener import webhook_listener
+from app.routes.webhook_listener import webhook_listener
 
 def create_app():
     app = Flask(__name__)

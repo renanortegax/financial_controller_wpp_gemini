@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# Key json google-services
+config_key_google.json
+
 # Venv file
 /venv/
 

@@ -28,3 +28,5 @@ def log_config():
         )
     
     logging.getLogger().info("Log configurado")
+
+    return logging.getLogger(__name__)

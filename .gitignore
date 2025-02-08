@@ -10,6 +10,7 @@ config_key_google.json
 
 # Testes file
 testes.ipynb
+testing.py
 
 # C extensions
 *.so

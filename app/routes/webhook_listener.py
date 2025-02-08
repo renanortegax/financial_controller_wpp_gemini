@@ -7,6 +7,8 @@ webhook_listener = Blueprint("webhook", __name__)
 
 def verify_post():
     """ Verifica se o webhook está funcionando """
+    #TODO adicionar o campo "id" e "direction" como "received" ao inserir na planilha
+    #TODO adicionar gravação no banco de dados Postgres
     request_data = request.get_json()
     logging.info("POST JSON: %s", request_data)
     message = get_message_infos(request_data)

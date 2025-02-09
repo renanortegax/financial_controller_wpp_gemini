@@ -1,7 +1,7 @@
 # Bot para controle financeiro pessoal
 
 ## Ideia inicial de estrutura:
-'''C:.  
+C:.  
 |   .env  
 |   .gitignore  
 |   README.md  
@@ -35,6 +35,6 @@
     |       |   distutils-precedence.pth  
     |       |  
     |       |  
-    +--etc--+'''  
+    +--etc--+
 
 

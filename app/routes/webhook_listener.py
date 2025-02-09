@@ -1,24 +1,28 @@
 import logging
+import json
 from flask import Blueprint, request, current_app, jsonify
 from datetime import datetime
 from app.data.google_sheet_connection import GoogleSheetDb
+from app.data.database import Database
+from app.decorators.security import signature_required
 
 webhook_listener = Blueprint("webhook", __name__)
 
 def verify_post():
-    """ Verifica se o webhook está funcionando """
-    #TODO adicionar o campo "id" e "direction" como "received" ao inserir na planilha
-    #TODO adicionar gravação no banco de dados Postgres
+    """ Verifica se o webhook está funcionando e orquestra e executa ações a partir da mensagem """
     request_data = request.get_json()
-    logging.info("POST JSON: %s", request_data)
+
+    if not is_valid_whatsapp_message(request_data):
+        logging.info("Requisicao não é uma mensagem válida: %s", request_data)    
+        logging.info("Campos extraídos: %s", message)
+
     message = get_message_infos(request_data)
     logging.info("Campos extraídos: %s", message)
 
-    sheet = GoogleSheetDb(sheet_name="Dados_Whast_App_Bot")
+    # Salva no google sheets e no banco de dados
+    process_message_data(request_data, message)
 
-    sheet.append_row(list(message.values()))
-
-    return "ok", 200
+    return jsonify({"status": "ok"}), 200
 
 # GraphAPI requer determinado retorno para validar autenticidade
 def verify_get(): # a qualquer momento eles podem mandar um get e precisa ser validado conforme https://developers.facebook.com/docs/graph-api/webhooks/getting-started/
@@ -43,6 +47,7 @@ def verify_get(): # a qualquer momento eles podem mandar um get e precisa ser va
         return jsonify({"status": "error_get_verification", "message": "No hub.mode or hub.verify token"}), 400
 
 @webhook_listener.route("/webhook", methods=["POST"])
+@signature_required
 def webhook_post():
     return verify_post()
 
@@ -50,14 +55,54 @@ def webhook_post():
 def webhook_get():
     return verify_get()
 
-def get_message_infos(request_data) -> dict:
+def get_message_infos(request_data, sheet=False) -> dict:
     """ Pega as informações da mensagem recebida e retorna um dicionario """
     data = {}
     timestamp_sender = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('timestamp')
-    data["sender_time"] = datetime.fromtimestamp(int(timestamp_sender)).strftime('%Y-%m-%d %H:%M:%S')
-    data["sender_name"] = request_data.get('entry')[0].get('changes')[0].get('value').get('contacts')[0].get('profile').get('name')
-    data["sender_number"] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('from')
-    data["message_type"] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('type')
-    data["text"] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('text').get('body')
+    if sheet:
+        last_id = sheet.get_all_records()[-1].get('id')
+        data['id'] = last_id + 1 if isinstance(last_id, int) else 1
+    data['sender_time'] = datetime.fromtimestamp(int(timestamp_sender)).strftime('%Y-%m-%d %H:%M:%S')
+    data['sender_name'] = request_data.get('entry')[0].get('changes')[0].get('value').get('contacts')[0].get('profile').get('name')
+    data['sender_number'] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('from')
+    data['direction'] = 'received'
+    data['message_type'] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('type')
+    data['text'] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('text').get('body')
     return data
 
+def process_message_data(request_data, message):
+    """ Salva no db e no sheets """
+    save_to_google_sheets(request_data)
+    save_to_database(message)
+
+
+def save_to_google_sheets(request_data):
+    """ Salva no sheets pegando as infos com id """
+    sheet = GoogleSheetDb(sheet_name="Dados_Whast_App_Bot")
+
+    # Extrai com o id por conta do google sheets
+    row_append_sheet = get_message_infos(request_data, sheet=sheet)
+    sheet.append_row(list(row_append_sheet.values()))
+   
+
+def save_to_database(message):
+    """ Insere os dados no banco de dados """
+    values_to_insert = [list(message.values())]
+    with Database() as db:
+        db.insert_values('messages', 
+                         ['datetime', 'name', 'number', 'message_type', 'direction', 'content'], 
+                         values_to_insert, 
+                         logging=True)
+        
+def is_valid_whatsapp_message(request_data):
+    """
+    Check if the incoming webhook event has a valid WhatsApp message structure.
+    """
+    return (
+        request_data.get("object")
+        and request_data.get("entry")
+        and request_data["entry"][0].get("changes")
+        and request_data["entry"][0]["changes"][0].get("value")
+        and request_data["entry"][0]["changes"][0]["value"].get("messages")
+        and request_data["entry"][0]["changes"][0]["value"]["messages"][0]
+    )

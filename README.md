@@ -39,4 +39,3 @@ C:.
     +--etc--+
 
 ## DOCUMENTAR
-Rodando no pythonanywhere

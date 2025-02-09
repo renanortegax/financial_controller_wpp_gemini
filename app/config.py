@@ -23,10 +23,8 @@ def log_config():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(funcName)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[logging.StreamHandler(sys.stdout),
-                  logging.FileHandler("logs/app.log")] # jogando os logs em um arquivo
-        )
-    
+        handlers=[logging.StreamHandler(sys.stdout)])
+
     logging.getLogger().info("Log configurado")
 
     return logging.getLogger(__name__)

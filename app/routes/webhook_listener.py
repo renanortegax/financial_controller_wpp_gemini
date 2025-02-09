@@ -3,7 +3,6 @@ import json
 from flask import Blueprint, request, current_app, jsonify
 from datetime import datetime
 from app.data.google_sheet_connection import GoogleSheetDb
-from app.data.database import Database
 from app.decorators.security import signature_required
 
 webhook_listener = Blueprint("webhook", __name__)
@@ -13,8 +12,7 @@ def verify_post():
     request_data = request.get_json()
 
     if not is_valid_whatsapp_message(request_data):
-        logging.info("Requisicao não é uma mensagem válida: %s", request_data)    
-        logging.info("Campos extraídos: %s", message)
+        logging.info("Requisicao não é uma mensagem válida: %s", request_data)
 
     message = get_message_infos(request_data)
     logging.info("Campos extraídos: %s", message)
@@ -30,6 +28,8 @@ def verify_get(): # a qualquer momento eles podem mandar um get e precisa ser va
     hub_token = request.args.get("hub.verify_token")
     hub_mode = request.args.get("hub.mode")
     hub_challenge = request.args.get("hub.challenge") # An int you must pass back to us.
+    logging.info(f"Recebido hub_token: {hub_token}")
+    logging.info(f"Esperado VERIFY_TOKEN: {current_app.config['VERIFY_TOKEN']}")
 
     if hub_mode and hub_token:
         # Check the mode and token sent are correct
@@ -73,7 +73,6 @@ def get_message_infos(request_data, sheet=False) -> dict:
 def process_message_data(request_data, message):
     """ Salva no db e no sheets """
     save_to_google_sheets(request_data)
-    save_to_database(message)
 
 
 def save_to_google_sheets(request_data):
@@ -83,17 +82,8 @@ def save_to_google_sheets(request_data):
     # Extrai com o id por conta do google sheets
     row_append_sheet = get_message_infos(request_data, sheet=sheet)
     sheet.append_row(list(row_append_sheet.values()))
-   
 
-def save_to_database(message):
-    """ Insere os dados no banco de dados """
-    values_to_insert = [list(message.values())]
-    with Database() as db:
-        db.insert_values('messages', 
-                         ['datetime', 'name', 'number', 'message_type', 'direction', 'content'], 
-                         values_to_insert, 
-                         logging=True)
-        
+
 def is_valid_whatsapp_message(request_data):
     """
     Check if the incoming webhook event has a valid WhatsApp message structure.

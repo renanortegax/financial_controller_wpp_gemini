@@ -10,16 +10,16 @@ class GoogleSheetDb:
     """
     Classe que encapsula a conexão e operações básicas na planilha do Google Sheets
     """
-    def __init__(self, 
-                 sheet_name: str, 
-                 credential_file: str = os.path.join(os.getcwd(), "config_key_google.json"), 
+    def __init__(self,
+                 sheet_name: str,
+                 credential_file: str = os.path.join(os.getcwd(), 'secret_files_config', "config_key_google.json"),
                  scope: List[str] = [
                     "https://spreadsheets.google.com/feeds",
                     "https://www.googleapis.com/auth/spreadsheets",
                     "https://www.googleapis.com/auth/drive.file",
                     "https://www.googleapis.com/auth/drive",
-                ], 
-                 worksheet_index: int = 0):        
+                ],
+                 worksheet_index: int = 0):
         # Autorizando a conexão
         self.scope = scope
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(credential_file, scope)

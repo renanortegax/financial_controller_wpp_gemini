@@ -1,6 +1,7 @@
 # Bot para controle financeiro pessoal
 
 ## Ideia inicial de estrutura:
+
 C:.  
 |   .env  
 |   .gitignore  
@@ -37,4 +38,4 @@ C:.
     |       |  
     +--etc--+
 
-
+## DOCUMENTAR

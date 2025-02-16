@@ -1,8 +1,10 @@
 from functools import wraps
-from flask import current_app, jsonify, request
-import logging
+from flask import current_app, jsonify, request 
 import hashlib
 import hmac
+from app.config import log_config
+
+logger = log_config('app.decorators.security')
 
 
 def validate_signature(payload, signature):
@@ -16,8 +18,8 @@ def validate_signature(payload, signature):
         digestmod=hashlib.sha256,
     ).hexdigest()
 
-    logging.info(f"Assinatura esperada: {expected_signature}")
-    logging.info(f"Assinatura recebida: {signature}")
+    # logger.info(f"Assinatura esperada: {expected_signature}")
+    # logger.info(f"Assinatura recebida: {signature}")
 
     # Check if the signature matches
     return hmac.compare_digest(expected_signature, signature)
@@ -32,7 +34,7 @@ def signature_required(f):
     def decorated_function(*args, **kwargs):
         signature = request.headers.get("X-Hub-Signature-256", "")[7:]  # Removing 'sha256='
         if not validate_signature(request.data.decode("utf-8"), signature):
-            logging.info("Signature verification failed!")
+            logger.info("Signature verification failed!")
             return jsonify({"status": "error", "message": "Invalid signature"}), 403
         return f(*args, **kwargs)
 

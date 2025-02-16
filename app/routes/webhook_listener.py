@@ -6,6 +6,7 @@ from app.decorators.security import signature_required
 from app.utils.message import Message
 from app.utils.message_sender import MessageSender
 from app.config import log_config
+from app.utils.message_processor import process_incoming_message
 
 logger = log_config('app.routes.webhook_listener')
 webhook_listener = Blueprint("webhook", __name__)
@@ -19,25 +20,27 @@ def verify_post():
         infos_status_alterado = request_data.get('entry')[0].get('changes')[0].get('value').get('statuses')[0]
         logger.info("Status alterado: %s", jsonify(infos_status_alterado))
         logger.info("Received a WhatsApp status update.")
+
         return jsonify({"status": "ok"}), 200
 
 
     try:
         # Mensagem recebida
-        # Salva no sheets a partir da mensagem
-        sheet = GoogleSheetDb(sheet_name="Dados_Whast_App_Bot")
-        message = Message(request_data, sheet)
-        message.process_message_data()
-        logger.info("Request recebido: %s", request_data)
-        logger.info("Mensagem tratada: %s", message.get_message_infos())
-
-        # Processa mensagem -> envia retorno
         if is_valid_whatsapp_message(request_data):
-            sender = MessageSender()
-
-            parameters = sender.get_parameters_message_sender(current_app.config["PHONE_NUMBER_TO"], "TESTE DE RETORNO") # Aqui vale entrar uma função que trata a mensagem
-            sender.send_message(parameters=parameters)
+            # Salva no sheets a partir da mensagem
+            sheet = GoogleSheetDb(sheet_name="Dados_Whast_App_Bot")
+            message = Message(request_data, sheet)
+            # Salva na planilha
+            message.process_message_data()
+            logger.info("Mensagem tratada: %s", message.get_message_infos())
             
+            # sender = MessageSender()
+            # parameters = sender.get_parameters_message_sender(current_app.config["PHONE_NUMBER_TO"], "TESTE DE RETORNO") # Aqui vale entrar uma função que trata a mensagem
+            # sender.send_message(parameters=parameters)
+
+            # Processa mensagem via IA
+            process_incoming_message(message)
+
             return jsonify({"status": "ok"}), 200
         else:
             return (

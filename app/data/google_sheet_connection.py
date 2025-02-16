@@ -5,7 +5,7 @@ import os
 from app.config import log_config
 from datetime import datetime
 
-logger = log_config()
+logger = log_config('app.data.google_sheet_connection')
 class GoogleSheetDb:
     """
     Classe que encapsula a conexão e operações básicas na planilha do Google Sheets

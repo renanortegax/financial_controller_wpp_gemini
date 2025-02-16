@@ -18,13 +18,14 @@ class Config:
     OPENAI_ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
     GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
-def log_config():
+def log_config(name=None):
     """ Configura e inicia os logs da aplicação """
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(funcName)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[logging.StreamHandler(sys.stdout)])
+        handlers=[logging.StreamHandler(sys.stdout)]
+    )
 
     logging.getLogger().info("Log configurado")
 
-    return logging.getLogger(__name__)
+    return logging.getLogger(name if name else __name__)

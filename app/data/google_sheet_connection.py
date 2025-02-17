@@ -45,6 +45,13 @@ class GoogleSheetDb:
         self.worksheet.append_row(row_data)
         logger.info(f"Linha adicionada: {row_data}")
 
+    def append_multiple_rows(self, rows_data):
+        """
+        Adiciona N linhas no final da planilha
+        """
+        self.worksheet.append_rows(rows_data)
+        logger.info("Linhas adicionadas: %s", rows_data)
+
     def update_cell(self, row: int, col: int, value: Any):
         """
         Atualiza uma célula específica (row, col)

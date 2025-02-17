@@ -20,20 +20,21 @@ class MessageSender:
 
         # logger.info('Classe MessageSender inicializada com os parâmetros %s', vars(MessageSender))
 
-    def get_parameters_message_sender(self, phone_number_to, text):
+    def get_parameters_message_sender(self, text, send_to):
         return json.dumps(
             {
                 "messaging_product": "whatsapp",
                 "recipient_type": "individual",
-                "to":phone_number_to,
+                "to":"+" + send_to,
                 "type": "text",
                 "text": {"preview_url": False, "body": text},
             }
         )
 
-    def send_message(self, parameters):
+    def send_message(self, text, send_to):
         url = self.url
         headers = self.headers
+        parameters = self.get_parameters_message_sender(text, send_to)
 
         logger.info("Parametros de chamada: %s", parameters)
         logger.info("URL: %s", self.url)

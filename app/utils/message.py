@@ -13,6 +13,8 @@ class Message:
         self.request_data = request_data
         self.sheet = sheet
         self.data = self.get_message_infos()
+        self.sender_name = self.data.get("sender_name", 'Não encontrei seu nome')
+        self.sender_time = self.data.get("sender_time")
         self.sender_number = self.data.get("sender_number", None)
         self.text = self.data.get("text", None)
     
@@ -54,9 +56,8 @@ class Message:
 
     def reply_message(self, text):
         sender = MessageSender() # informações para inciar são conhecidas da aplicação
-        sender_number = self.data.get('sender_number')
-        logger.info("Enviando resposta para: %s", sender_number)
-        response = sender.send_message(text, sender_number) 
+        logger.info("Enviando resposta para: %s", self.sender_number)
+        response = sender.send_message(text, self.sender_number) 
 
         return response
     

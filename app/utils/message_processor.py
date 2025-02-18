@@ -25,16 +25,16 @@ def process_incoming_message(message):
         message.reply_message(f"{create_return_message(detail_transaction)}.\n\nFique a vontade para me mandar qualquer mensage =).") #TODO criar uma resposta personalizada dizendo o que foi gravado
     
     elif transaction_type == 'consulta':
-        message.reply_message("Você quer consultar seus gastos, certo? \nEssa função ainda não está implementada... cena dos próximos capítulos") #TODO
+        message.reply_message("Você quer *consultar* seus gastos, certo? \nEntão *desenvolva logo* kkkkk... isso só depende de você!!!") #TODO
     
     elif transaction_type == 'alteracao':
-        message.reply_message("Você quer alterar algum registro, certo? \nEssa função ainda não está implementada... cena dos próximos capítulos") #TODO
+        message.reply_message("Você quer *alterar* algum registro, certo? \nEntão *desenvolva logo* kkkkk... isso só depende de você!!!") #TODO
     
     elif transaction_type == 'nao-identificado':
-        message.reply_message("Não entendi muito bem o que disse, por isso, não farei nenhuma ação. Poderia me explicar melhor ?\n A mensagem não se encaixa nas tarefas que eu costumo fazer por aqui :)")
+        message.reply_message("Não entendi muito bem o que disse, por isso, não vou fazer nada pra você. *Se faça entender!!*.\nA mensagem não se encaixa nas tarefas que eu costumo fazer por aqui :)")
         
     else:
-        message.reply_message("Não entendi bem o que você quis dizer. (TODO)")
+        message.reply_message("Tive alguma alucinação, acho melhor avisar seu chefe!! KKKKK ")
         
 def create_list_transaction_to_insert(detail_transaction, message, transaction_type):
     total_gasto = get_total_gasto(detail_transaction)

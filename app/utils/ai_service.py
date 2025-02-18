@@ -21,7 +21,8 @@ class TipoTransacao(typing_extensions.TypedDict):
 class Categoria(typing_extensions.TypedDict):
     categoria: str
     valor: float
-    detalhes: list[str]
+    item: str
+    detalhes: str #list[str]
 
 class GastoFinanceiro(typing_extensions.TypedDict):
     categorias: list[Categoria]
@@ -83,10 +84,10 @@ class AIService:
                 - **Consulta**: O usuário quer ver um resumo dos gastos já registrados. Exemplo: "Quanto eu gastei esse mês?"
                 - **Alteração**: O usuário quer modificar um gasto existente. Exemplo: "Quero corrigir o valor do Uber que registrei antes."
 
-                Sua tarefa é classificar a mensagem corretamente e **retornar APENAS o seguinte JSON**, sem explicações adicionais:
+                Sua tarefa é classificar a mensagem corretamente e **retornar APENAS o seguinte JSON**, sem explicações adicionais. Caso a mensagem que eu te enviar não se encaixe de forma alguma em nenhum dos tipos abaixo, classifique como "nao-identificado"
                 ```json
                 {{
-                    "tipo": "registro"  # ou "consulta" ou "alteracao"
+                    "tipo": "registro"  # ou "consulta" ou "alteracao" ou "nao-identificado"
                 }}
                 Agora segue a mensagem que estou te enviando:
                 {text_input}
@@ -105,6 +106,8 @@ class AIService:
         - Compras Gerais: Eletrônicos, móveis, produtos diversos.
         - Outros: Qualquer item que não se encaixe nas categorias acima.
 
+        Para os casos que identificar, extraia o item que o dinheiro foi gasto e qual categoria ele melhor se encaixa. Além disso, o valor desse item e qualquer informação adicional, coloque em detalhes.
+
         Segue minha mensagem: {text_input}
         """
 
@@ -120,4 +123,4 @@ class AIService:
         
         logger.info("O retorno do registro pela IA foi: %s", response.text)
         
-        return response.text
+        return json.loads(response.text)

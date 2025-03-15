@@ -4,6 +4,7 @@ from typing import List, Any, Dict
 import os
 from app.config import log_config
 from datetime import datetime
+import random
 
 logger = log_config('app.data.google_sheet_connection')
 class GoogleSheetDb:
@@ -79,3 +80,26 @@ class GoogleSheetDb:
         data['text'] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('text').get('body')
         return data
 
+    def get_random_lines(self, n=2):
+        data = self.get_all_records()
+        if len(data) < n:
+            return data
+        return random.sample(data, n)
+
+    def get_sheet_unique_items(self):
+        data = self.get_all_records()
+        categorias = []
+        items = []
+        times = []
+        for i in data:
+            if not i.get('categoria') in categorias:
+                categorias.append(i.get('categoria'))
+            if not i.get('item') in items:
+                items.append(i.get('item'))
+            if not i.get('time') in times:
+                times.append(i.get('time'))
+                
+        datas_convertidas = [datetime.strptime(data, '%Y-%m-%d %H:%M:%S') for data in times]
+        times = [datetime.strftime(min(datas_convertidas), '%Y-%m-%d'), datetime.strftime(max(datas_convertidas), '%Y-%m-%d')]
+            
+        return categorias, items, times

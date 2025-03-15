@@ -37,8 +37,8 @@ class MessageSender:
         parameters = self.get_parameters_message_sender(text, send_to)
 
         logger.info("Parametros de chamada: %s", parameters)
-        logger.info("URL: %s", self.url)
-        logger.info("Headers: %s", self.headers)
+        # logger.info("URL: %s", self.url)
+        # logger.info("Headers: %s", self.headers)
         try:
             response = requests.post(url, data=parameters, headers=headers, timeout=10)
             response.raise_for_status()
@@ -53,5 +53,5 @@ class MessageSender:
         
         else: # Se passar
             logger.info("Status: %s", response.status_code)
-            logger.info("Response sent: %s", response.json())
+            # logger.info("Response sent: %s", response.json())
             return response

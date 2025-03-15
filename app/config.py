@@ -20,12 +20,14 @@ class Config:
 
 def log_config(name=None):
     """ Configura e inicia os logs da aplicação """
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(funcName)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[logging.StreamHandler(sys.stdout)]
-    )
+    logger = logging.getLogger(name if name else "root")
+    if not logger.hasHandlers():
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(funcName)s - %(name)s - %(levelname)s - %(message)s",
+            handlers=[logging.StreamHandler(sys.stdout)]
+        )
 
-    logging.getLogger().info("Log configurado")
+        logging.getLogger().info("Log configurado")
 
     return logging.getLogger(name if name else __name__)

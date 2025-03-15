@@ -5,6 +5,10 @@ app = create_app()
 
 application = app
 
+@app.route('/')
+def home():
+    return "Aplicação pessoal para controle financeiro. @renanortegax!"
+
 if __name__ == "__main__":
     logging.info("Aplicação iniciada")
     app.run(debug=True)

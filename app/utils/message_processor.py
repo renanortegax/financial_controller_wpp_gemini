@@ -19,22 +19,28 @@ def process_incoming_message(message):
     
     if transaction_type == 'registro':
         detail_transaction = ai_service.get_register_transaction_ai_flow(text_input)
-        # json_response_ai = json.loads(detail_transaction)
+
+        logger.info("Detail transaction: %s", detail_transaction)
         insert_values_into_sheet_transaction(message, detail_transaction, transaction_type)
-        # message.reply_message(f"IA classificou os gastos conforme: {detail_transaction}. \nO retorno seria {create_return_message(detail_transaction)}.\nSua transação foi gravada na sua planilha.") #TODO criar uma resposta personalizada dizendo o que foi gravado
-        message.reply_message(f"{create_return_message(detail_transaction)}.\n\nFique a vontade para me mandar qualquer mensage =).") #TODO criar uma resposta personalizada dizendo o que foi gravado
+        message.reply_message(f"{create_spent_return_message(detail_transaction)}.\n\nAtt. Mago")
     
     elif transaction_type == 'consulta':
-        message.reply_message("Você quer *consultar* seus gastos, certo? \nEntão *desenvolva logo* kkkkk... isso só depende de você!!!") #TODO
+        message.reply_message("Parece que você quer *consultar* seus gastos.\nEssa função em teste...") #TODO
+        sheet_transaction = connect_sheet_transaction()
+        filter_conditions = ai_service.get_consulting_transaction_ai_flow(text_input=text_input,
+                                                                          sample_data=sheet_transaction.get_random_lines(),
+                                                                          unique_items=sheet_transaction.get_sheet_unique_items()
+                                                                          )
+        message.reply_message(f"Os filtros que a IA classificou: {filter_conditions}")
     
     elif transaction_type == 'alteracao':
-        message.reply_message("Você quer *alterar* algum registro, certo? \nEntão *desenvolva logo* kkkkk... isso só depende de você!!!") #TODO
+        message.reply_message("Você quer *alterar* algum registro, certo? \Função ainda não implementada...") #TODO
     
     elif transaction_type == 'nao-identificado':
-        message.reply_message("Não entendi muito bem o que disse, por isso, não vou fazer nada pra você. *Se faça entender!!*.\nA mensagem não se encaixa nas tarefas que eu costumo fazer por aqui :)")
+        message.reply_message("Parece que o que você deseja não está no meu escopo. Estou disponível para *inserir registros*, *consultar seus gastos* ou *alterar algum registro*.")
         
     else:
-        message.reply_message("Tive alguma alucinação, acho melhor avisar seu chefe!! KKKKK ")
+        message.reply_message("Acho que tive alguma alucinação...")
         
 def create_list_transaction_to_insert(detail_transaction, message, transaction_type):
     total_gasto = get_total_gasto(detail_transaction)
@@ -43,13 +49,17 @@ def create_list_transaction_to_insert(detail_transaction, message, transaction_t
         for item in detail_transaction.get("categorias")
     ]
 
-def create_return_message(detail_transaction):
+def create_spent_return_message(detail_transaction):
     total_gasto = get_total_gasto(detail_transaction)
-    categorias = detail_transaction.get('categorias')
-    formated_list_items = [i for i in [f"Registro {i+1}: \n *Categoria:* {cat.get('categoria')}\n *Item:* {cat.get('item')}\n *Valor:* R${cat.get('valor'):.2f}\n *Detalhes:* {cat.get('detalhes')}" for i, cat in enumerate(categorias)]]
-    formated_message = "O seu pedido é uma ordem. Estou adicionando na sua planilha conforme abaixo:\n"+"\n----------------------------------\n".join(formated_list_items)
-    formated_message += f"\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n*Total gasto:* R${total_gasto:.2f}"
+    formated_list_items = get_spent_categories_formated(detail_transaction)
+    formated_message = "Gastos adicionados:\n"+"\n----------------------------------\n".join(formated_list_items)
+    formated_message += f"\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n*Total gasto:* R${total_gasto:.2f}"
     return formated_message
+
+def get_spent_categories_formated(detail_transaction):
+    categories = detail_transaction.get('categorias')
+    formated_items = [i for i in [f"Registro {i+1}: \n *Categoria:* {cat.get('categoria')}\n *Item:* {cat.get('item')}\n *Valor:* R${cat.get('valor'):.2f}\n *Detalhes:* {cat.get('detalhes')}" for i, cat in enumerate(categories)]]
+    return formated_items
 
 def get_total_gasto(detail_transaction):
     return detail_transaction.get('total_gasto')

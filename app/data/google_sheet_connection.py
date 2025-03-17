@@ -25,12 +25,19 @@ class GoogleSheetDb:
         self.scope = scope
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(credential_file, scope)
         self.client = gspread.authorize(self.creds)
-
         # Abre a planilha
         self.spreadsheet = self.client.open(sheet_name)
-
-        # Seleciona pelo índice ou pelo nome
+        # Seleciona aba pelo índice ou pelo nome
         self.worksheet = self.spreadsheet.get_worksheet(worksheet_index)
+        self.data = []
+        self.refresh_data()
+
+
+    def refresh_data(self):
+        """
+        Atualiza os dados armazenados na instância da classe
+        """
+        self.data = self.get_all_records()
 
     def get_all_records(self) -> List[Dict[str, Any]]:
         """
@@ -71,7 +78,7 @@ class GoogleSheetDb:
         """ Pega as informações da mensagem recebida e retorna um dicionario """
         data = {}
         timestamp_sender = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('timestamp')
-        data['id'] = self.get_all_records()[-1].get('id') + 1
+        data['id'] = self.data[-1].get('id') + 1
         data['sender_time'] = datetime.fromtimestamp(int(timestamp_sender)).strftime('%Y-%m-%d %H:%M:%S')
         data['sender_name'] = request_data.get('entry')[0].get('changes')[0].get('value').get('contacts')[0].get('profile').get('name')
         data['sender_number'] = request_data.get('entry')[0].get('changes')[0].get('value').get('messages')[0].get('from')
@@ -81,17 +88,15 @@ class GoogleSheetDb:
         return data
 
     def get_random_lines(self, n=2):
-        data = self.get_all_records()
-        if len(data) < n:
-            return data
-        return random.sample(data, n)
+        if len(self.data) < n:
+            return self.data
+        return random.sample(self.data, n)
 
     def get_sheet_unique_items(self):
-        data = self.get_all_records()
         categorias = []
         items = []
         times = []
-        for i in data:
+        for i in self.data:
             if not i.get('categoria') in categorias:
                 categorias.append(i.get('categoria'))
             if not i.get('item') in items:
@@ -103,3 +108,33 @@ class GoogleSheetDb:
         times = [datetime.strftime(min(datas_convertidas), '%Y-%m-%d'), datetime.strftime(max(datas_convertidas), '%Y-%m-%d')]
             
         return categorias, items, times
+    
+    def filter_sheet_by_conditions(self, filter_conditions):
+        """ Retorna o dicionario de registros filtrados """
+        return list(filter(lambda transacao: self.define_line_in_filter(transacao, filter_conditions), self.data))
+        
+    def define_line_in_filter(self, transacao: Dict[str, Any], filter_conditions: Dict[str, Any]) -> bool:
+        """ Filtra o dicionario e retorna True se a transacao passar pelo filtro """
+        
+        if filter_conditions.get("categorias") and transacao.get("categoria") not in filter_conditions["categorias"]:
+            return False
+
+        if filter_conditions.get("itens") and transacao.get("item") not in filter_conditions["itens"]:
+            return False
+
+        transacao_data = datetime.strptime(transacao.get("date", ""), "%Y/%m/%d")
+
+        data_inicial = filter_conditions.get("data_inicial")
+        data_final = filter_conditions.get("data_final")
+
+        if data_inicial:
+            data_inicial = datetime.strptime(data_inicial, "%Y-%m-%d")
+            if transacao_data < data_inicial:
+                return False
+
+        if data_final:
+            data_final = datetime.strptime(data_final, "%Y-%m-%d")
+            if transacao_data > data_final:
+                return False
+
+        return True

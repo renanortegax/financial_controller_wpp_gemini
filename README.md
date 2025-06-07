@@ -39,43 +39,57 @@ Em API Setup, embaixo de "WhatsApp", ao abrir a tela terá o 'Test number', que 
 - Em seguida, na lista de "Campos do webhook", habilite a opção "messages".
 - Se tudo tiver certo, pode clicar em "Test" ao lado da opção "messages". Você receberá um status code 200 no terminal do ngrok, e isso indica que está devidamente configurado. Agora, pode enviar a mensagem para o número.
 
-## Configurando a planilha sheets
-...
+### Configurando a planilha sheets
+- Libs utilizadas: gspread, oauth2client
+- Logar/Criar conta no google cloud para ativar a Google Sheets API
+- Criar um projeto ou utilizar algum que ja possui
+- Entrar em: APIs e servicos > Biblioteca
+- Localizar Google Sheets API e Google Drive -> Ativar as duas
+- Depois de ativado, sera necessario criar uma conta de servico:
+    - Localizar: IAM e administrador > Contas de servico
+        - Criar conta de servico (insira um nome e continue ate gerar a conta)
+        - Em seguida, estara visivel a conta de servico na mesma pagina
+- Agora, precisamos adicinoar uma chave:
+    - "Adicionar chave" -> formato .json
+    - Armazenar o json em ./secret_files_config
+    - Precisa que o arquivo tenha o nome "config_key_google.json", ou altere para o nome que seu arquivo foi gerado e ajuste o codigo no modulo /data/google_sheet_connection.py
+- Por fim, compartilhar sua planilha sheets com o email da credencial:
+    - Em "Detalhes" da chave, copiar o email que foi gerado e, em sua planilha sheets, compartilhar com este email
+    - A aba de index=0, sera registrada a mensagem bruta do usuario
+    - A aba de index=1, sera registrada o que a IA retornou de classificacao da mensagem
+    - IMPORTANTE: a planilha sheets sera conectada a partir do nome, ao chamar a classe sheet_name="Dados_Whast_App_Bot"
 
-## Configurando a API
+### Configurando a API doo Gemini
 ...
 
 ## Estrutura:
 ```C.:
-│   📁 .git
-│   📁 .env
-│   📁 app
-│   │   📁 data
-│   │   │   📄 google_sheet_connection.py
-│   │   📁 decorators
-│   │   │   📄 security.py
-│   │   📁 routes
-│   │   │   📄 webhook_listener.py
-│   │   📁 utils
-│   │   │   📄 ai_service.py
-│   │   │   📄 message.py
-│   │   │   📄 message_processor.py
-│   │   │   📄 message_sender.py
-│   │   │   📄 utils.py
-│   │   📄 config.py
-│   │   📄 __init__.py
-│   📁 logs
-│   │   📄 app.log
-│   📁 secret_files_config
-│   │   📄 config_key_google.json
-│   📁 start
-│   │   📄 quick_start.py
-│   📄 .env
-│   📄 .gitignore
-│   📄 exemple_env.env
-│   📄 README.md
-│   📄 requirements.txt
-│   📄 run.py
-│   📄 testes.ipynb
-│   📄 testing.py
+├── .git
+├── .gitignore
+├── README.md
+├── app
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data
+│   │   └── google_sheet_connection.py
+│   ├── decorators
+│   │   └── security.py
+│   ├── routes
+│   │   └── webhook_listener.py
+│   └── utils
+│       ├── ai_service.py
+│       ├── message.py
+│       ├── message_processor.py
+│       ├── message_sender.py
+│       └── utils.py
+├── example.env
+├── logs
+│   └── app.log
+├── requirements.txt
+├── run.py
+├── secret_files_config
+│   └── config_key_google.json
+├── start
+│   └── quick_start.py
+└── venv
 ```

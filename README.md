@@ -38,6 +38,7 @@ Em API Setup, embaixo de "WhatsApp", ao abrir a tela terá o 'Test number', que 
 - Adicione em URL de callback o seu "https://" + domain + "/webhook", que é o endpoint que espera o webhook e faz a validação com o seu VERIFY_TOKEN. Em seguida, coloque o mesmo VERIFY_TOKEN embaixo que está configurado em sua .env. 
 - Em seguida, na lista de "Campos do webhook", habilite a opção "messages".
 - Se tudo tiver certo, pode clicar em "Test" ao lado da opção "messages". Você receberá um status code 200 no terminal do ngrok, e isso indica que está devidamente configurado. Agora, pode enviar a mensagem para o número.
+    - Rode o arquivo /start/start.py -> assim que receber a mensagem no seu numero, responda com qualquer texto
 
 ### Configurando a planilha sheets
 - Libs utilizadas: gspread, oauth2client

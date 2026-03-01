@@ -19,8 +19,15 @@ def verify_post():
     if (request_data.get('entry')[0].get('changes')[0].get('value').get('statuses')):
         infos_status_alterado = request_data.get('entry')[0].get('changes')[0].get('value').get('statuses')[0]
         logger.info("Status alterado: %s", jsonify(infos_status_alterado))
+        logger.info(f"Status alterado-update completo: {request_data}")
         logger.info("Received a WhatsApp status update.")
-
+        
+        statuses = request_data.get('entry', [{}])[0].get('changes', [{}])[0].get('value', {}).get('statuses', [])
+        for status in statuses:
+            if status.get('status') == 'failed':
+                errors = status.get('errors', [])
+                for error in errors:
+                    logger.error(f"Mensagem falhou | code: {error.get('code')} | motivo: {error.get('title')} | destinatario: {status.get('recipient_id')}")
         return jsonify({"status": "ok"}), 200
 
 

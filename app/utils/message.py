@@ -57,7 +57,10 @@ class Message:
     def reply_message(self, text):
         sender = MessageSender() # informações para inciar são conhecidas da aplicação
         logger.info("Enviando resposta para: %s", self.sender_number)
-        response = sender.send_message(text, self.sender_number) 
+        response = sender.send_message(text, self.sender_number)
+        
+        logger.info(f"Status do envio: {response.status_code}")
+        logger.info(f"Resposta: {response.json()}")
 
         return response
     

@@ -9,6 +9,13 @@ logger = log_config("app.utils.message_processor")
 ai_service = AIService()
 
 def process_incoming_message(message):
+    text_input = message.text
+    logger.info("Mensagem recebida: %s", text_input)
+
+    message.reply_message("AGORA FOI ENTAO")
+
+
+def process_incoming_message___(message):
     """
     Recebe um objeto `Message` (que já contém o texto do usuário) e decide
     o que fazer (classificar, registrar, responder, etc).

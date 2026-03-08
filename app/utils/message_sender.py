@@ -10,37 +10,29 @@ load_dotenv()
 
 class MessageSender:
     def __init__(self):
-        self.endpoint = "messages"
-        self.phone_numer_id = current_app.config['PHONE_NUMBER_ID']
-        self.headers = {
-            "Content-type": "application/json",
-            "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
-        }
-        self.url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/{self.endpoint}"
+        self.token = os.getenv("TELEGRAM_BOT_TOKEN")
+        self.headers = {"Content-Type": "application/json"}
+        self.url = f"https://api.telegram.org/bot{self.token}/sendMessage"
 
         # logger.info('Classe MessageSender inicializada com os parâmetros %s', vars(MessageSender))
 
     def get_parameters_message_sender(self, text, send_to):
         return json.dumps(
             {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to":"+" + send_to,
-                "type": "text",
-                "text": {"preview_url": False, "body": text},
+                "chat_id": send_to,
+                "text": text,
+                "parse_mode":"Markdown",
             }
         )
 
     def send_message(self, text, send_to):
-        url = self.url
-        headers = self.headers
         parameters = self.get_parameters_message_sender(text, send_to)
 
         logger.info("Parametros de chamada: %s", parameters)
         # logger.info("URL: %s", self.url)
         # logger.info("Headers: %s", self.headers)
         try:
-            response = requests.post(url, data=parameters, headers=headers, timeout=10)
+            response = requests.post(self.url, data=parameters, headers=self.headers, timeout=10)
             response.raise_for_status()
         
         except requests.Timeout:

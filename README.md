@@ -63,6 +63,24 @@ Em API Setup, embaixo de "WhatsApp", ao abrir a tela terá o 'Test number', que 
 ### Configurando a API doo Gemini
 ...
 
+### Atualizacao de desenvolvimento:
+#### Gemini:
+- Estou com restricao à API do Gemini, possivelmente por terem alterado as políticas. Log:
+```
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+```
+- Por isso, alterei o código para passar a só devolver uma mensagem pra tentar subir novamente, mas tomei o erro da Meta:
+#### Meta:
+- Integração com a API da Meta foi **restringido o uso dessa forma no Brasil para teste**. Log:
+```bash
+026-03-01 20:10:50,833 - verify_post - app.routes.webhook_listener - INFO - Status alterado-update completo: {'object': 'whatsapp_business_account', 'entry': [{'id': '3269397279904197', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '15551662388', 'phone_number_id': '949481414922924'}, 'statuses': [{'id': 'wamid.HBgNNTUxNDk5NzM5NDg5MhUCABEYEkJFMDU5RDZENUUyRjhDQUJDMwA=', 'status': 'failed', 'timestamp': '1772406581', 'recipient_id': '5514997394892', 'errors': [{'code': 130497, 'title': 'Business account is restricted from messaging users in this country.', 'message': 'Business account is restricted from messaging users in this country.', 'error_data': {'details': 'Business account is restricted from messaging users in this country.'}, 'href': 'https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/'}]}]}, 'field': 'messages'}]}]}
+2026-03-01 20:10:50,834 - verify_post - app.routes.webhook_listener - INFO - Received a WhatsApp status update.
+2026-03-01 20:10:50,835 - verify_post - app.routes.webhook_listener - ERROR - Mensagem falhou | code: 130497 | motivo: Business account is restricted from messaging users in this country. | destinatario: 5514997394892
+```
+#### Solucao:
+- **Possivelmente, migrarei para Telegram #TODO**
+
+
 ## Estrutura:
 ```C.:
 ├── .git

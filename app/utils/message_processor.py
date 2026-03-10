@@ -8,14 +8,14 @@ from app.utils.utils import create_list_transaction_to_insert,create_spent_retur
 logger = log_config("app.utils.message_processor")
 ai_service = AIService()
 
-def process_incoming_message(message):
+def process_incoming_message__(message):
     text_input = message.text
     logger.info("Mensagem recebida: %s", text_input)
 
-    message.reply_message("AGORA FOI ENTAO")
+    message.reply_message("Estou te ouvindo")
 
 
-def process_incoming_message___(message):
+def process_incoming_message(message):
     """
     Recebe um objeto `Message` (que já contém o texto do usuário) e decide
     o que fazer (classificar, registrar, responder, etc).

@@ -5,6 +5,7 @@ from app.data.google_sheet_connection import GoogleSheetDb
 from app.utils.message import Message
 from app.config import log_config
 from app.utils.message_processor import process_incoming_message
+import traceback
 
 logger = log_config('app.routes.webhook_listener')
 webhook_listener = Blueprint("webhook", __name__)
@@ -34,7 +35,8 @@ def verify_post():
 
     except Exception as e:
         logger.error("Erro inesperado: %s", e)
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.error("Traceback: %s", traceback.format_exc())
+        return jsonify({"status": "error", "message": str(e)}), 200 # pro telegram/wpp nao ficar enviando infinito
 
 @webhook_listener.route("/webhook", methods=["POST"])
 def webhook_post():

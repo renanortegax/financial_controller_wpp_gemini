@@ -4,6 +4,7 @@ import typing_extensions
 from dotenv import load_dotenv
 import os
 from app.config import log_config
+from app.utils.model_manager import ModelManager
 # from app.data.google_sheet_connection import GoogleSheetDb.get_sheet_unique_items, GoogleSheetDb.get_random_lines
 
 logger = log_config('app.utils.ai_service')
@@ -40,7 +41,7 @@ class FiltrosConsulta(typing_extensions.TypedDict):
     data_final: str
     itens: list[str]
 
-class AIService:
+class AIService(ModelManager):
     """ Classe para gerenciar a conexão e uso da IA """
     
     _instance = None  # Singleton para reutilizar a instância
@@ -50,35 +51,52 @@ class AIService:
         if cls._instance is None:
             cls._instance = super(AIService, cls).__new__(cls)
             cls._instance.configure_api()
-            cls._instance.initialize_model()
+            cls._instance.initialize_model() # sobrescreve com os modelos reais & já seta self.models e self.blocked_until
         return cls._instance
-    
+
     def configure_api(self):
         # GOOGLE_API_KEY = current_app.config["GOOGLE_API_KEY"]
         GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
         genai.configure(api_key=GOOGLE_API_KEY)
 
     def initialize_model(self):
-        self.model = genai.GenerativeModel(
-                model_name='gemini-2.0-flash',
-                generation_config=genai.GenerationConfig(
-                    max_output_tokens=500,
-                    top_k=40,
-                    top_p=0.9,
-                    response_mime_type="application/json"
-                )
-            )
-        logger.info("Modelo AI inicializado com sucesso.")
+        default_config = genai.GenerationConfig(
+            top_k=40,
+            top_p=0.9,
+            response_mime_type="application/json"
+        )
+
+        primary = genai.GenerativeModel(
+            model_name='gemini-3-flash-preview',
+            generation_config=default_config
+        )
+        second = genai.GenerativeModel(
+            model_name='gemini-2.5-flash-lite',
+            generation_config=default_config
+        )
+        fallback = genai.GenerativeModel(
+            model_name='gemini-2.5-flash',
+            generation_config=default_config
+        )
+
+        self.models = [primary, second, fallback] # herdado de ModelsManager
+        self.blocked_until = {} # herdado de ModelsManager
+
+        logger.info("Modelo AI inicializado com sucesso. Modelos: %s", [m.model_name for m in self.models])
+
+    def _build_config(self, response_schema=None, max_output_tokens=1000):
+        return genai.GenerationConfig(
+            max_output_tokens=max_output_tokens,
+            response_mime_type="application/json",
+            response_schema=response_schema,
+        )
+
 
     def get_type_message(self, text_input):
         """Classifica a mensagem usando a IA"""
         prompt = self.create_prompt_type_transaction(text_input)
-        response = self.model.generate_content(prompt,
-                                               generation_config=genai.GenerationConfig(
-                                                   max_output_tokens=50,
-                                                   response_mime_type="application/json",
-                                                   response_schema=TipoTransacao,
-                                                   )
+        response = self.generate_content(prompt,
+                                               generation_config=self._build_config(TipoTransacao, max_output_tokens=1000)
                                                )
         logger.info("IA classificou como: %s", response.text)
         
@@ -160,10 +178,8 @@ class AIService:
     def get_register_transaction_ai_flow(self, text_input):
         """ Método deve ser chamado quando se sabe que é um caso de registro. Passa para a IA classificar as categorias e retorna o json categorizado """
         prompt = self.create_prompt_register_transaction(text_input)
-        response = self.model.generate_content(prompt,
-                                               generation_config=genai.GenerationConfig(
-                                                   response_schema=GastoFinanceiro,
-                                                   )
+        response = self.generate_content(prompt,
+                                               generation_config=self._build_config(response_schema=GastoFinanceiro,max_output_tokens=1000)
                                                )
         
         logger.info("O retorno do registro pela IA foi: %s", response.text)
@@ -175,12 +191,10 @@ class AIService:
             unique_items = [categorias, items, dates]
         """
         prompt = self.create_prompt_filter_search(text_input, sample_data, unique_items)
-        response = self.model.generate_content(prompt,
-                                               generation_config=genai.GenerationConfig(
-                                                   response_schema=FiltrosConsulta,
-                                                   )
+        response = self.generate_content(prompt,
+                                               generation_config=self._build_config(response_schema=FiltrosConsulta, max_output_tokens=2000)
                                                )
-        
+
         logger.info("Os filtros que a IA classificou: %s", response.text)
         
         return json.loads(response.text)

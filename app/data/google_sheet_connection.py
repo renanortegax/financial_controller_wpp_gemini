@@ -104,7 +104,7 @@ class GoogleSheetDb:
             if not i.get('time') in times:
                 times.append(i.get('time'))
                 
-        datas_convertidas = [datetime.strptime(data, '%Y-%m-%d %H:%M:%S') for data in times]
+        datas_convertidas = [datetime.strptime(data, '%Y-%m-%d %H:%M:%S') for data in times if data]
         times = [datetime.strftime(min(datas_convertidas), '%Y-%m-%d'), datetime.strftime(max(datas_convertidas), '%Y-%m-%d')]
             
         return categorias, items, times

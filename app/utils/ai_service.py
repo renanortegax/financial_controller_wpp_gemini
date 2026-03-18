@@ -84,6 +84,15 @@ class AIService(ModelManager):
 
         logger.info("Modelo AI inicializado com sucesso. Modelos: %s", [m.model_name for m in self.models])
 
+    def generate_content(self, prompt, message=None, **kwargs):
+        """Sobrescreve a funcao da classe pai para permitir notificação ao usuário quando modelo é bloqueado"""
+        def notification_callback(model_name, unblock_at): # só definindo, passa o objeto da funcao como argumento para o generate_content da classe pai model_manager -> só vai ser executada de fato no _block_model, se o notification_callback for passado, que é o caso
+            if message:
+                msg = f"⚠️ O modelo de IA {model_name} atingiu o limite e foi temporariamente bloqueado até {unblock_at.strftime('%Y-%m-%d %H:%M:%S')}. Tentando próximo modelo..."
+                message.reply_message(msg)
+        
+        return super().generate_content(prompt, notification_callback=notification_callback, **kwargs)
+
     def _build_config(self, response_schema=None, max_output_tokens=1000):
         return genai.GenerationConfig(
             max_output_tokens=max_output_tokens,
@@ -92,10 +101,10 @@ class AIService(ModelManager):
         )
 
 
-    def get_type_message(self, text_input):
+    def get_type_message(self, text_input, message=None):
         """Classifica a mensagem usando a IA"""
         prompt = self.create_prompt_type_transaction(text_input)
-        response = self.generate_content(prompt,
+        response = self.generate_content(prompt, message=message,
                                                generation_config=self._build_config(TipoTransacao, max_output_tokens=1000)
                                                )
         logger.info("IA classificou como: %s", response.text)
@@ -175,10 +184,10 @@ class AIService(ModelManager):
         return response.text
     
     
-    def get_register_transaction_ai_flow(self, text_input):
+    def get_register_transaction_ai_flow(self, text_input, message=None):
         """ Método deve ser chamado quando se sabe que é um caso de registro. Passa para a IA classificar as categorias e retorna o json categorizado """
         prompt = self.create_prompt_register_transaction(text_input)
-        response = self.generate_content(prompt,
+        response = self.generate_content(prompt, message=message,
                                                generation_config=self._build_config(response_schema=GastoFinanceiro,max_output_tokens=1000)
                                                )
         
@@ -186,12 +195,12 @@ class AIService(ModelManager):
         
         return json.loads(response.text)
 
-    def get_consulting_transaction_ai_flow(self, text_input, sample_data, unique_items):
+    def get_consulting_transaction_ai_flow(self, text_input, sample_data, unique_items, message=None):
         """ Método deve ser chamado quando se sabe que é um caso de consulta. A IA retornará os filtros que o usuário deseja
             unique_items = [categorias, items, dates]
         """
         prompt = self.create_prompt_filter_search(text_input, sample_data, unique_items)
-        response = self.generate_content(prompt,
+        response = self.generate_content(prompt, message=message,
                                                generation_config=self._build_config(response_schema=FiltrosConsulta, max_output_tokens=2000)
                                                )
 

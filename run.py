@@ -2,6 +2,7 @@ from app import create_app
 from app.config import log_config
 import os
 from dotenv import load_dotenv
+import argparse
 
 load_dotenv()
 logger = log_config("app.utils.message_sender")
@@ -13,11 +14,11 @@ application = app
 def home():
     return "Aplicação pessoal para controle financeiro. @renanortegax!"
 
-def register_telegram_webhook():
+def register_telegram_webhook(dev_run):
     import requests
     token = os.getenv("TELEGRAM_BOT_TOKEN")
-    webhook_url = os.getenv("WEBHOOK_URL_DEV")
-    # webhook_url = os.getenv("WEBHOOK_URL")
+
+    webhook_url = os.getenv("WEBHOOK_URL") if not dev_run else os.getenv("WEBHOOK_URL_DEV")
 
     if not webhook_url:
         logger.warning("WEBHOOK_URL não definida no .env — webhook não registrado")
@@ -34,6 +35,11 @@ def register_telegram_webhook():
 
 if __name__ == "__main__":
     logger.info("Aplicação iniciada")
-    register_telegram_webhook()
+    parser = argparse.ArgumentParser(description='Run flask app')
+    parser.add_argument('--dev', action='store_true')
+
+    dev_run = parser.parse_args().dev
+
+    register_telegram_webhook(dev_run)
     # app.run(debug=True)
     app.run(host="0.0.0.0", port=8000, debug=True)

@@ -22,42 +22,45 @@ def process_incoming_message(message):
     """
     text_input = message.text
     
-    transaction_type = ai_service.get_type_message(text_input)
-    logger.info("Mensagem classificada como %s pela IA", transaction_type)
-    
-    if transaction_type == 'registro':
-        detail_transaction = ai_service.get_register_transaction_ai_flow(text_input)
+    try:
+        transaction_type = ai_service.get_type_message(text_input, message)
+        logger.info("Mensagem classificada como %s pela IA", transaction_type)
+        
+        if transaction_type == 'registro':
+            detail_transaction = ai_service.get_register_transaction_ai_flow(text_input, message)
 
-        logger.info("Detail transaction: %s", detail_transaction)
-        insert_values_into_sheet_transaction(message, detail_transaction, transaction_type)
-        message.reply_message(f"{create_spent_return_message(detail_transaction)}.\n\nAtt. Mago")
-    
-    elif transaction_type == 'consulta':
-        message.reply_message("Parece que você quer *consultar* seus gastos.\nEssa função em teste...") #TODO
-        sheet_transaction = connect_sheet_transaction()
-        filter_conditions = ai_service.get_consulting_transaction_ai_flow(text_input=text_input,
-                                                                          sample_data=sheet_transaction.get_random_lines(),
-                                                                          unique_items=sheet_transaction.get_sheet_unique_items()
-                                                                          )
-        message.reply_message(f"Os filtros que a IA classificou: {filter_conditions}")
-        filtered_data = sheet_transaction.filter_sheet_by_conditions(filter_conditions)
-        message.reply_message(f"{create_message_transactions_filtered(filtered_data, filter_conditions)}\n\nAtt. Mago")        
-    
-    elif transaction_type == 'alteracao':
-        message.reply_message("Você quer *alterar* algum registro, certo? \Função ainda não implementada...") #TODO
-    
-    elif transaction_type == 'nao-identificado':
-        message.reply_message("Parece que o que você deseja não está no meu escopo. Estou disponível para *inserir registros*, *consultar seus gastos* ou *alterar algum registro*.")
+            logger.info("Detail transaction: %s", detail_transaction)
+            insert_values_into_sheet_transaction(message, detail_transaction, transaction_type)
+            message.reply_message(f"{create_spent_return_message(detail_transaction)}.\n\nAtt. Mago")
         
-    else:
-        message.reply_message("Acho que tive alguma alucinação...")
+        elif transaction_type == 'consulta':
+            message.reply_message("Parece que você quer *consultar* seus gastos.\nEssa função em teste...") #TODO
+            sheet_transaction = connect_sheet_transaction()
+            filter_conditions = ai_service.get_consulting_transaction_ai_flow(text_input=text_input,
+                                                                              sample_data=sheet_transaction.get_random_lines(),
+                                                                              unique_items=sheet_transaction.get_sheet_unique_items(),
+                                                                              message=message
+                                                                              )
+            message.reply_message(f"Os filtros que a IA classificou: {filter_conditions}")
+            filtered_data = sheet_transaction.filter_sheet_by_conditions(filter_conditions)
+            message.reply_message(f"{create_message_transactions_filtered(filtered_data, filter_conditions)}\n\nAtt. Mago")        
         
-# def create_list_transaction_to_insert(detail_transaction, message, transaction_type):
-#     total_gasto = get_total_gasto(detail_transaction)
-#     return [
-#         [message.data.get('id'), message.sender_time, message.sender_name, transaction_type,item.get('categoria'), item.get('item'), item.get('valor'), item.get('detalhes'), total_gasto] 
-#         for item in detail_transaction.get("categorias")
-#     ]
+        elif transaction_type == 'alteracao':
+            message.reply_message("Você quer *alterar* algum registro, certo? \Função ainda não implementada...") #TODO
+        
+        elif transaction_type == 'nao-identificado':
+            message.reply_message("Parece que o que você deseja não está no meu escopo. Estou disponível para *inserir registros*, *consultar seus gastos* ou *alterar algum registro*.")
+            
+        else:
+            message.reply_message("Acho que tive alguma alucinação...")
+    
+    except Exception as e:
+        error_str = str(e)
+        if "Todos os modelos estão indisponíveis" in error_str:
+            message.reply_message("❌ Todos os modelos de IA estão temporariamente indisponíveis devido a limites de uso. Tente novamente mais tarde.")
+        else:
+            logger.error("Erro inesperado no processamento da mensagem: %s", e)
+            message.reply_message("❌ Ocorreu um erro inesperado. Tente novamente.")
 
 # def create_spent_return_message(detail_transaction):
 #     total_gasto = get_total_gasto(detail_transaction)

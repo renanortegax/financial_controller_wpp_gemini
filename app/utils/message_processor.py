@@ -2,7 +2,6 @@ from app.config import log_config
 from app.utils.ai_service import AIService
 from app.data.google_sheet_connection import GoogleSheetDb
 import json
-from IPython.display import Markdown 
 from app.utils.utils import create_list_transaction_to_insert,create_spent_return_message,get_spent_categories_formated,get_total_gasto, connect_sheet_transaction, insert_values_into_sheet_transaction, create_message_transactions_filtered
 
 logger = log_config("app.utils.message_processor")

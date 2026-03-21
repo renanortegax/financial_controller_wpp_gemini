@@ -2,6 +2,8 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from typing import List, Any, Dict
 import os
+import json
+import tempfile
 from app.config import log_config
 from datetime import datetime
 import random
@@ -13,7 +15,7 @@ class GoogleSheetDb:
     """
     def __init__(self,
                  sheet_name: str,
-                 credential_file: str = os.path.join(os.getcwd(), 'secret_files_config', "config_key_google.json"),
+                 credential_file: str = None,
                  scope: List[str] = [
                     "https://spreadsheets.google.com/feeds",
                     "https://www.googleapis.com/auth/spreadsheets",
@@ -21,6 +23,20 @@ class GoogleSheetDb:
                     "https://www.googleapis.com/auth/drive",
                 ],
                  worksheet_index: int = 0):
+
+        # Pegando o json: tanto via env quanto via arquivo local
+        credentials_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+        if credentials_json:
+            tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+            tmp.write(credentials_json)
+            tmp.flush()
+            credential_file = tmp.name
+            logger.info("Credenciais carregadas via .env")
+        else:
+            if credential_file is None:
+                credential_file = os.path.join(os.getcwd(), 'secret_files_config', "config_key_google.json")
+            logger.info("Credenciais carregadas via arquivo local em %s", os.path.normpath(os.path.join(os.getcwd(), 'secret_files_config', "config_key_google.json")))
+
         # Autorizando a conexão
         self.scope = scope
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(credential_file, scope)

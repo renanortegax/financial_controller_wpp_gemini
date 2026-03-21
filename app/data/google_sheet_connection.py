@@ -66,16 +66,14 @@ class GoogleSheetDb:
         """
         Adiciona uma linha ao final da planilha
         """
-        next_row = len(self.data) + 2  # +1 pelo header, +1 pela próxima linha
-        self.worksheet.insert_row(row_data, next_row)
+        self.worksheet.append_row(row_data, value_input_option='USER_ENTERED', insert_data_option='INSERT_ROWS')
+
 
     def append_multiple_rows(self, rows_data):
         """
         Adiciona N linhas no final da planilha
         """
-        next_row = len(self.data) + 2
-        self.worksheet.insert_rows(rows_data, next_row)
-        logger.info("Linhas adicionadas a partir da linha %s: %s", next_row, rows_data)
+        self.worksheet.append_rows(rows_data, value_input_option='USER_ENTERED', insert_data_option='INSERT_ROWS')
 
     def update_cell(self, row: int, col: int, value: Any):
         """

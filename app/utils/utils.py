@@ -38,6 +38,9 @@ def get_total_gasto(detail_transaction):
 def connect_sheet_transaction():
     return GoogleSheetDb(sheet_name="Dados_Whast_App_Bot", worksheet_index=1)
 
+def connect_sheet_auth():
+    return GoogleSheetDb(sheet_name="Dados_Whast_App_Bot", worksheet_index=2)
+
 def insert_values_into_sheet_transaction(message, detail_transaction, transaction_type):
     sheet_transaction = connect_sheet_transaction()
     list_to_insert = create_list_transaction_to_insert(detail_transaction, message, transaction_type)

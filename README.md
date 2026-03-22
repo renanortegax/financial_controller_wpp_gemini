@@ -93,11 +93,11 @@ Crie um arquivo `.env` na raiz conforme o `example.env` disponível no repositó
 │   ├── data
 │   │   └── google_sheet_connection.py  # Conexão com Google Sheets
 │   ├── decorators
-│   │   └── security.py                 # Decoradores de segurança
 │   ├── routes
 │   │   └── webhook_listener.py         # Listener de webhooks do Telegram
 │   ├── utils
 │   │   ├── ai_service.py               # Serviço de IA com Gemini e fallbacks
+│   │   ├── auth.py                     # Serviço de autenticacao - via senha no .env
 │   │   ├── message.py                  # Classe para mensagens do Telegram
 │   │   ├── message_processor.py        # Processamento de mensagens
 │   │   ├── message_sender.py           # Envio de mensagens
@@ -106,8 +106,6 @@ Crie um arquivo `.env` na raiz conforme o `example.env` disponível no repositó
 │   ├── __init__.py                     # Inicialização do app Flask
 │   └── config.py                       # Configurações gerais
 ├── secret_files_config                 # Credenciais locais (não subir para o git)
-├── start
-│   └── quick_start.py                  # Script inicial para testes
 ├── example.env                         # Exemplo de variáveis de ambiente
 ├── Procfile                            # Configuração do gunicorn para produção
 ├── requirements.txt                    # Dependências do projeto

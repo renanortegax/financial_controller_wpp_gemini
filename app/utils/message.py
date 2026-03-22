@@ -4,11 +4,12 @@ from flask import Blueprint, request, current_app, jsonify
 from datetime import datetime
 from app.config import log_config
 from app.utils.message_sender import MessageSender
+from app.data.google_sheet_connection import GoogleSheetDb
 
 logger = log_config("app.utils.message")
 
 class Message:
-    def __init__(self, request_data, sheet=None):
+    def __init__(self, request_data, sheet: GoogleSheetDb | None = None):
         """Inicializa a mensagem extraindo os dados do request_data do Telegram"""
         self.request_data = request_data
         self.sheet = sheet
@@ -16,6 +17,7 @@ class Message:
         self.sender_name = self.data.get("sender_name", 'Não encontrei seu nome')
         self.sender_time = self.data.get("sender_time")
         self.sender_number = self.data.get("sender_number", None)  # no Telegram = chat_id
+        self.username = self.data.get("username", None)  # no Telegram = chat_id
         self.text = self.data.get("text", None)
 
     def get_message_infos(self) -> dict:
@@ -37,6 +39,7 @@ class Message:
             last = sender.get('last_name', '')
             data['sender_name'] = f"{first} {last}".strip() or 'Desconhecido'
 
+            data['username'] = str(chat.get('username', ''))  # chat_id é o "número" no Telegram
             data['sender_number'] = str(chat.get('id', ''))  # chat_id é o "número" no Telegram
             data['direction'] = 'received'
             data['message_type'] = 'text' if message.get('text') else 'other'

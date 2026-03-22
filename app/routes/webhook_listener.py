@@ -3,12 +3,17 @@ from flask import Blueprint, request, current_app, jsonify
 from datetime import datetime
 from app.data.google_sheet_connection import GoogleSheetDb
 from app.utils.message import Message
+from app.utils.utils import connect_sheet_auth
 from app.config import log_config
 from app.utils.message_processor import process_incoming_message
 import traceback
+from app.utils.auth import AuthService,load_verified_auth
 
 logger = log_config('app.routes.webhook_listener')
 webhook_listener = Blueprint("webhook", __name__)
+
+auth_sheet = connect_sheet_auth()
+load_verified_auth(auth_sheet)
 
 def verify_post():
     """Recebe updates do Telegram e orquestra as ações"""
@@ -23,6 +28,13 @@ def verify_post():
         sheet = GoogleSheetDb(sheet_name="Dados_Whast_App_Bot")
         message = Message(request_data, sheet)
         message.process_message_data()
+
+        auth_service = AuthService(message, auth_sheet)
+        if not auth_service.check_chatid_verified():
+            # fluxo de autenticação
+            auth_service.handle_auth()
+            return jsonify({"status": "ok"}), 200
+        
         logger.info("Mensagem tratada: %s", message.get_message_infos())
 
         process_incoming_message(message)

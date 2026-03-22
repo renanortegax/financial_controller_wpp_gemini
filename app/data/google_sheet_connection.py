@@ -7,6 +7,13 @@ import tempfile
 from app.config import log_config
 from datetime import datetime
 import random
+from gspread.exceptions import WorksheetNotFound
+
+index_sheets = {
+    0:'messages',
+    1:'transaction',
+    2:'auth'
+}
 
 logger = log_config('app.data.google_sheet_connection')
 class GoogleSheetDb:
@@ -43,8 +50,16 @@ class GoogleSheetDb:
         self.client = gspread.authorize(self.creds)
         # Abre a planilha
         self.spreadsheet = self.client.open(sheet_name)
+        
         # Seleciona aba pelo índice ou pelo nome
-        self.worksheet = self.spreadsheet.get_worksheet(worksheet_index)
+        try:
+            self.worksheet = self.spreadsheet.get_worksheet(worksheet_index)
+            if self.worksheet is None:
+                raise WorksheetNotFound(f"Aba de índice {worksheet_index} não encontrada")
+        except WorksheetNotFound:
+            logger.warning("Aba de índice %s não encontrada — criando automaticamente", worksheet_index)
+            self.worksheet = self.spreadsheet.add_worksheet(title=index_sheets.get(worksheet_index,'sheet'), rows=100, cols=5)
+
         self.data = []
         self.refresh_data()
 

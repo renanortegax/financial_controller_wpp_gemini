@@ -2,19 +2,20 @@ from app.config import log_config
 from app.utils.ai_service import AIService
 from app.data.google_sheet_connection import GoogleSheetDb
 import json
+from app.utils.message import Message
 from app.utils.utils import create_list_transaction_to_insert,create_spent_return_message,get_spent_categories_formated,get_total_gasto, connect_sheet_transaction, insert_values_into_sheet_transaction, create_message_transactions_filtered
 
 logger = log_config("app.utils.message_processor")
 ai_service = AIService()
 
-def process_incoming_message__(message):
+def process_incoming_message__(message: Message):
     text_input = message.text
     logger.info("Mensagem recebida: %s", text_input)
 
     message.reply_message("Estou te ouvindo")
 
 
-def process_incoming_message(message):
+def process_incoming_message(message: Message):
     """
     Recebe um objeto `Message` (que já contém o texto do usuário) e decide
     o que fazer (classificar, registrar, responder, etc).
